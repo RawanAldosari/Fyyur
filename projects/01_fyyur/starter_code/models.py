@@ -21,7 +21,7 @@ class Venue(db.Model):
     seeking_description= db.Column(db.String, nullable= True)
 
     shows = db.relationship('Show', cascade="all,delete", backref= 'venue')
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate xxxxxxxxx
+    # TODO: xxxxxxxxx implement any missing fields, as a database migration using Flask-Migrate 
 
 class Artist(db.Model):
     __tablename__ = 'artist'
@@ -37,10 +37,10 @@ class Artist(db.Model):
 
     website_link = db.Column(db.String(120))
     seeking_venue= db.Column(db.Boolean, nullable= True, default= False)
-    seeking_desciption= db.Column(db.String, nullable= True)
+    seeking_description= db.Column(db.String, nullable= True)
 
     shows = db.relationship('Show', cascade="all,delete", backref= 'artist')
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate xxxxxxxxxxx
+    # TODO: xxxxxxxxxxx implement any missing fields, as a database migration using Flask-Migrate 
 
 
 
