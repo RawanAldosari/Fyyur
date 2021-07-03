@@ -15,6 +15,8 @@ from flask_wtf import Form
 from forms import *
 import sys
 from flask_migrate import Migrate
+from flask_wtf.csrf import CSRFProtect
+
 
 #----------------------------------------------------------------------------#
 # App Config.
@@ -25,6 +27,8 @@ moment = Moment(app)
 app.config.from_object('config')
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+csrf = CSRFProtect(app)
+
 
 #----------------------------------------------------------------------------#
 # Models.
@@ -209,6 +213,7 @@ def create_venue_form():
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
   error= False
+  form = VenueForm()
   
   try: 
     venue= Venue()
@@ -225,8 +230,14 @@ def create_venue_submission():
 
     venue.seeking_description= request.form['seeking_description']
     
-    db.session.add(venue)
-    db.session.commit()
+    if form.validate(): 
+      db.session.add(venue)
+      db.session.commit()
+
+    else: 
+      flash("Incorrect information was provided.")
+      raise
+
   except:
     db.session.rollback()
     error=True
@@ -234,7 +245,6 @@ def create_venue_submission():
 
   # on successful db insert, flash success
   if error: 
-    error_string = str(error)
     flash('An error occurred. Venue ' + request.form['name'] + ' could not be listed.') 
 
   if not error:
@@ -403,7 +413,9 @@ def edit_artist_submission(artist_id):
  
   error = False  
   artist = Artist.query.get(artist_id)
+  form= ArtistForm()
   try: 
+
     artist.name = request.form['name']
     artist.city = request.form['city']
     artist.state = request.form['state']
@@ -415,14 +427,19 @@ def edit_artist_submission(artist_id):
     artist.seeking_venue = True if 'seeking_venue' in request.form else False 
     artist.seeking_description = request.form['seeking_description']
 
-    db.session.commit()
+    if form.validate(): 
+      db.session.commit()
+    else: 
+      flash('Incorrect information was provided')
+      raise
+
   except: 
     error = True
     db.session.rollback()
   
 
   if error: 
-    flash('An error has occurred. could not update the Artist <strong>'+ artist.name +'<\strong>.')
+    flash('An error has occurred. could not update the Artist '+ artist.name +'.')
   if not error: 
     flash(artist.name + ' has been successfully updated!')
 
@@ -457,6 +474,7 @@ def edit_venue_submission(venue_id):
  
   error = False  
   venue = Venue.query.get(venue_id)
+  form= VenueForm()
 
   try: 
     venue.name = request.form['name']
@@ -470,14 +488,19 @@ def edit_venue_submission(venue_id):
     venue.website_link = request.form['website_link']
     venue.seeking_talent = True if 'seeking_talent' in request.form else False 
     venue.seeking_description = request.form['seeking_description']
-    db.session.commit()
+
+    if form.validate(): 
+      db.session.commit()
+    else: 
+      flash('Incorrect information was provided')
+      raise
 
   except: 
     error = True
     db.session.rollback()
  
   if error: 
-    flash('An error has occurred. could not update the Venue <strong>'+ venue.name +'<\strong>.')
+    flash('An error has occurred. could not update the Venue '+ venue.name +'.')
   if not error: 
     flash(venue.name + ' has been successfully updated!')
   
@@ -497,6 +520,7 @@ def create_artist_submission():
   # called upon submitting the new artist listing form
   
   error= False
+  form = ArtistForm()
 
   try: 
     name = request.form['name']
@@ -511,9 +535,14 @@ def create_artist_submission():
     looking_for_venues= True if 'seeking_venue' in request.form else False 
     seeking_desc= request.form['seeking_description']
 
-    artist = Artist(name=name, city=city, state=state, phone=phone, genres=genres, facebook_link=fb_link, image_link=img_link, website_link=website_link, seeking_venue= looking_for_venues, seeking_description= seeking_desc)
-    db.session.add(artist)
-    db.session.commit()
+    if form.validate(): 
+      artist = Artist(name=name, city=city, state=state, phone=phone, genres=genres, facebook_link=fb_link, image_link=img_link, website_link=website_link, seeking_venue= looking_for_venues, seeking_description= seeking_desc)
+      db.session.add(artist)
+      db.session.commit()
+    else: 
+      flash("incorrect phone format", 'error')
+      raise
+
   except:
     db.session.rollback()
     error=True
